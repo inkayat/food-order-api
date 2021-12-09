@@ -14,16 +14,21 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from yemeksepetiapp import views
+from django.urls import path
 from django.contrib.auth.views import LoginView, LogoutView
-
+from django.conf.urls.static import static
+from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('restaurant/', include('yemeksepetiapp.urls')),
-    path('restaurant/sign-in/', LoginView.as_view(template_name='restaurant/sign_in.html'),
+    path('/', views.home, name='home'), 
+    path('restaurant/sign-in/', LoginView.as_view(template_name='restaurant/sign-in.html'),
         name = 'restaurant-sign-in'),
-    path('restaurant/sign-out', LogoutView.as_view(),
+    path('restaurant/sign-out', LogoutView.as_view(template_name='home.html'),
         {'next_page': '/'}, 
-        name='restaurant-sign-out')
-]
+        name='restaurant-sign-out'),
+    path('restaurant/sign-up', views.restaurant_sign_up,
+        name='restaurant-sign-up'),
+    path('restaurant/', views.restaurant_home, name='restaurant-home'),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
