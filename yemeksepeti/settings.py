@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework_social_oauth2',
     'yemeksepetiapp',
+    'oauth2_provider',
+    'bootstrap3',
 ]
 
 MIDDLEWARE = [
@@ -154,3 +156,5 @@ LOGIN_REDIRECT_URL = '/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
+STRIPE_API_KEY = 'test_stripe_api_key'
