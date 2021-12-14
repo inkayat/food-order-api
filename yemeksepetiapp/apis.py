@@ -1,160 +1,155 @@
 import json
-from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
-from .models import Restaurant, Meal, Order, OrderDetails
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.decorators import api_view
+import logging
+from .models import Customer, Restaurant, Meal, Order, OrderDetails, Driver
 from .serializers import RestaurantSerializer, MealSerializer, OrderSerializer
-from oauth2_provider.models import AccessToken
 
-import stripe
-from yemeksepeti.settings import STRIPE_API_KEY
+logger = logging.getLogger(__name__)
 
-def customer_get_restaurants(request):
-    restaurants = RestaurantSerializer(
-        Restaurant.objects.all().order_by("-id"),
-        many = True,
-        context = {"request":request}
-    ).data
+class OrderViewSet(ModelViewSet):
+    """This is a ViewSet implementation for all Order functions
+    """
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
 
-    return JsonResponse({"restaurants": restaurants})
+    def get_permission(self):
+        if self.request.method in ['PATH', 'DELETE']:
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
 
-def customer_get_meals(request, restaurant_id):
-    meals = MealSerializer(
-        Meal.objects.filter(restaurant_id = restaurant_id).order_by("-id"),
-        many=True,
-        context = {"request":request}
-    ).data
-    return JsonResponse({"meals": meals})
+    def create(self, request, *args, **kwargs):
+        serializer = OrderSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
+    def get_queryset(self):
+        return Order.objects.all()
+
+
+@api_view()
+def order_details(request, id):
+    order = get_object_or_404(Order, pk=id)
+    serializer = OrderSerializer(order)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET', 'POST'])
+def order_list(request):
+    if request.method == "GET":
+        queryset = Order.objects.all()
+        serializer = OrderSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    elif request.method == 'POST':
+        serializer = OrderSerializer(data=request.data)
+        serializer.is_valid()
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST', 'GET'])
 @csrf_exempt
-def customer_add_order(request):
+def create_order(request):
     """
         params:
             access_token
+            customer_id
             restaurant_id
             address
             order_details(json format),examples:
                 [{"meal_id": 1, "quantity": 2},{"meal_id": 2, "quantity": 3}]
             stripe_token
-
         return:
             {"status":"success"}
     """
-    if request.method == "POST":
-        # get token
-        access_token = AccessToken.objects.get(token = request.POST.get("access_token"),expires__gt = timezone.now())
+    try:
+        if request.method == "POST":
+            # # get token
+            # access_token = AccessToken.objects.get(token = request.POST.get("access_token"),expires__gt = timezone.now())
 
-        #get Profile
-        customer = access_token.user.customer
+            # #get Profile
+            # customer = access_token.user.customer
 
-        # get stripe token
-        #stripe_token = request.POST["stripe_token"]
+            # # check whether customer has any order that is not DELIVERED
+            # if Order.objects.filter(customer = customer).exclude(status = Order.DELIVERED):
+            #     return Response({"status":"failed", "error":"Your last order must be completed"})
 
-        # check whether customer has any order that is not DELIVERED
-        if Order.objects.filter(customer = customer).exclude(status = Order.DELIVERED):
-            return JsonResponse({"status":"failed", "error":"Your last order must be completed"})
+            # check address
+            # if not request.POST["address"]:
+            #     return Response({"status":"failed", "error":"Address is required"})
 
-        # check address
-        if not request.POST["address"]:
-            return JsonResponse({"status":"failed", "error":"Address is required"})
+            # get order details
+            order_details = json.loads(request.POST["order_details"])
 
-        # get order details
-        order_details = json.loads(request.POST["order_details"])
-
-        order_total = 0
-        for meal in order_details:
-            order_total += Meal.objects.get(id=meal["meal_id"]).price * meal["quantity"]
-
-        if len(order_details)>0:
-            # step 1: create a charge: this will charge customer's card
-            # charge = stripe.Charge.create(
-            #     amount = order_total * 100,
-            #     currency = "usd",
-            #     source = stripe_token,
-            #     description = "Foodtasker Order"
-            # )
-            status = "success"
-            if status != "failed":
-                # step 2: create an order
-                order = Order.objects.create(
-                    customer = customer,
-                    restaurant_id = request.POST["restaurant_id"],
-                    total = order_total,
-                    status = Order.COOKING,
-                    address = request.POST["address"]
-                )
-
-                # step 3: create order details
-                for meal in order_details:
-                    OrderDetails.objects.create(
-                        order = order,
-                        meal_id = meal["meal_id"],
-                        quantity = meal["quantity"],
-                        sub_total = Meal.objects.get(id=meal["meal_id"]).price * meal["quantity"]
+            order_total = 0
+            for meal in order_details:
+                order_total += Meal.objects.get(id=meal["meal_id"]).price * meal["quantity"]
+            if len(order_details)>0:
+                stat = "success"
+                if stat != "failed":
+                    # step 2: create an order
+                    order = Order.objects.create(
+                        customer = Customer.objects.get(id=request.POST["customer_id"]),
+                        restaurant_id = request.POST["restaurant_id"],
+                        total = order_total,
+                        status = Order.COOKING,
+                        address = request.POST["address"]
                     )
+                    # step 3: create order details
+                    for meal in order_details:
+                        OrderDetails.objects.create(
+                            order = order,
+                            meal_id = meal["meal_id"],
+                            quantity = meal["quantity"],
+                            sub_total = Meal.objects.get(id=meal["meal_id"]).price * meal["quantity"]
+                        )
+                    return Response({"status":"success"}, status=status.HTTP_201_CREATED)
+                else:
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        raise e("Order create failed!")
 
-                return JsonResponse({"status":"success"})
+    else:
+        return Response({"status":"Failed"})    
 
-            else:
-                return JsonResponse({"status":"failed","error":"Faile connect to Stripe"})
-
-def customer_get_latest_order(request):
-    access_token = AccessToken.objects.get(token=request.GET.get("access_token"),expires__gt=timezone.now())
-
-    customer = access_token.user.customer
-    order = OrderSerializer(Order.objects.filter(customer = customer).last()).data
-    return JsonResponse({"order": order})
-
-# GET params: access_token
-def customer_driver_location(request):
-    access_token = AccessToken.objects.get(token=request.GET.get("access_token"),expires__gt=timezone.now())
-
-    customer = access_token.user.customer
-
-    # get driver's location related to this customer's order
-    current_order = Order.objects.filter(customer = customer, status = Order.ONTHEWAY).last()
-    location = current_order.driver.location
-
-    return JsonResponse({"location": location})
-
-###############
-# RESTAURANTS #
-###############
-
-def restaurant_order_notification(request, last_request_time):
-    """
-        select count(*) from Orders
-        where restaurant = request.user.restaurant AND created_at > last_request_time
-    """
-    notification = Order.objects.filter(restaurant = request.user.restaurant,
-        created_at__gt = last_request_time).count()
-
-    return JsonResponse({"notification":notification})
 
 ###########
 # DRIVERS #
 ###########
 
+@api_view()
 def driver_get_ready_orders(request):
     orders = OrderSerializer(
         Order.objects.filter(status=Order.READY, driver=None).order_by("-id"),
         many=True
     ).data
 
-    return JsonResponse({"orders":orders})
+    return Response({"orders":orders})
 
+
+@api_view(['GET', 'POST'])
 @csrf_exempt
-# POST params: access_token, order_id
+# POST params: access_token, order_id, driver_id
 def driver_pick_order(request):
     if request.method == "POST":
         # get token
-        access_token = AccessToken.objects.get(token=request.POST.get("access_token"),expires__gt=timezone.now())
+        # access_token = AccessToken.objects.get(token=request.POST.get("access_token"),expires__gt=timezone.now())
         # get driver
-        driver = access_token.user.driver
+        # driver = access_token.user.driver
         # check whether driver can only pick one order at the same time
-        if Order.objects.filter(driver=driver).exclude(status=Order.ONTHEWAY):
-            return JsonResponse({"status":"failed", "error": "You can only pick one order at the same time."})
+        driver_id = request.POST.get("driver_id")
 
+        driver = Driver.objects.get(id=driver_id)
+
+        if Order.objects.filter(driver=driver).exclude(status=Order.ONTHEWAY):
+            return Response({"status":"failed", "error": "You can only pick one order at the same time."})
         try:
             order = Order.objects.get(
                 id = request.POST["order_id"],
@@ -166,76 +161,37 @@ def driver_pick_order(request):
             order.picked_at = timezone.now()
             order.save()
 
-            return JsonResponse({"status":"success"})
+            return Response({"status":"success"})
 
         except Order.DoesNotExist:
-            return JsonResponse({"status":"failed", "error":"This order has been picked up by another."})
-    return JsonResponse({})
+            return Response({"status":"failed", "error":"This order has been picked up by another."})
+    return Response({})
+
 
 # GET params: access_token
 def driver_get_latest_order(request):
-    access_token = AccessToken.objects.get(token=request.GET.get("access_token"),expires__gt=timezone.now())
-
-    driver = access_token.user.driver
+    driver = request.GET.get("driver")
 
     order = OrderSerializer(
         Order.objects.filter(driver = driver).order_by("picked_at").last()
     ).data
 
-    return JsonResponse({"order": order})
+    return Response({"order": order}, status=status.HTTP_200_OK)
+
 
 # POST params: access_token, order_id
+@api_view(['GET', 'POST'])
 @csrf_exempt
 def driver_complete_order(request):
-    access_token = AccessToken.objects.get(token=request.POST.get("access_token"),expires__gt=timezone.now())
 
-    driver = access_token.user.driver
+    driver_id = request.POST.get("driver_id")
+    order_id = request.POST.get("order_id")
 
     order = Order.objects.get(
-        id = request.POST["order_id"],
-        driver = driver
+        id = order_id,
+        driver = Driver.objects.get(id=driver_id)
     )
     order.status = Order.DELIVERED
     order.save()
-
-    return JsonResponse({"status": "success"})
-
-# GET params: access_token
-def driver_get_revenue(request):
-    access_token = AccessToken.objects.get(token=request.GET.get("access_token"),expires__gt=timezone.now())
-
-    driver = access_token.user.driver
-
-    from datetime import timedelta
-
-    revenue = {}
-    today = timezone.now()
-    current_weekdays = [today + timedelta(days=i) for i in range(0-today.weekday(), 7-today.weekday())]
-
-    for day in current_weekdays:
-        orders = Order.objects.filter(
-            driver = driver,
-            status = Order.DELIVERED,
-            created_at__year = day.year,
-            created_at__month = day.month,
-            created_at__day = day.day,
-        )
-
-        revenue[day.strftime("%a")] = sum(order.total for order in orders)
-
-    return JsonResponse({"revenue": revenue})
-
-# POST params: access_token, 'lat', 'lng'
-@csrf_exempt
-def driver_update_location(request):
-    if request.method == "POST":
-        access_token = AccessToken.objects.get(token=request.POST.get("access_token"),expires__gt=timezone.now())
-
-        driver = access_token.user.driver
-
-        # set location string -> database
-        driver.location = request.POST["location"]
-        driver.save()
-
-        return JsonResponse({"status":"success"})
-
+    serializer = OrderSerializer(order)
+    return Response(serializer.data, status=status.HTTP_200_OK)
