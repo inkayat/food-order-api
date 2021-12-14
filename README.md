@@ -7,8 +7,6 @@ servisi.
 
 ## Yükleme 
 
-benim-projem'i npm kullanarak yükleyin
-
 ```bash 
   docker-compose build
   docker-compose up
