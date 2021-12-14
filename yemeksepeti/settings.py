@@ -38,9 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework_social_oauth2',
+    'rest_framework',
     'yemeksepetiapp',
-    'oauth2_provider',
     'bootstrap3',
 ]
 
@@ -82,8 +81,9 @@ WSGI_APPLICATION = 'yemeksepeti.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
+
 }
 
 

@@ -3,27 +3,27 @@ from .models import Restaurant, Meal, Customer, Driver, Order, OrderDetails
 
 class RestaurantSerializer(serializers.ModelSerializer):
     logo = serializers.SerializerMethodField()
+    class Meta:
+        model = Restaurant
+        fields = ("id", "name", "category", "phone", "address", "logo")
 
     def get_logo(self, restaurant):
         request = self.context.get('request')
         logo_url = restaurant.logo.url
         return request.build_absolute_uri(logo_url)
 
-    class Meta:
-        model = Restaurant
-        fields = ("id","name","phone","address","logo")
 
 class MealSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
+    class Meta:
+        model = Meal
+        fields = ("id", "name", "short_description", "image", "price")
 
     def get_image(self, meal):
         request = self.context.get('request')
         image_url = meal.image.url
         return request.build_absolute_uri(image_url)
 
-    class Meta:
-        model = Meal
-        fields = ("id","name","short_description","image","price")
 
 # order serializer
 class OrderCustomerSerializer(serializers.ModelSerializer):
@@ -31,14 +31,15 @@ class OrderCustomerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Customer
-        fields = ("id", "name", "avatar", "phone", "address")
+        fields = ("id", "name", "phone", "address")
+
 
 class OrderDriverSerializer(serializers.ModelSerializer):
     name = serializers.ReadOnlyField(source="user.get_full_name")
 
     class Meta:
         model = Customer
-        fields = ("id", "name", "avatar", "phone", "address")
+        fields = ("id", "name", "phone", "address")
 
 class OrderRestaurantSerializer(serializers.ModelSerializer):
     class Meta:

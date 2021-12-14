@@ -2,45 +2,65 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 
-
 class Restaurant(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='restaurant')
     name = models.CharField(max_length=255)
+    category = models.ForeignKey('Category', on_delete=models.CASCADE)
     phone = models.CharField(max_length=255)
     address = models.CharField(max_length=255)
     logo = models.ImageField(upload_to='restaurant_logo', blank=False)
 
     def __str__(self):
-        return self.name
+        return str(self.id)+' '+self.name
+
 
 class Customer(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='customer')
-    avatar = models.CharField(max_length=255)
     phone = models.CharField(max_length=255, blank=True)
     address = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
-        return self.user.get_full_name()
+        return str(self.id)+' '+self.user.get_full_name()
+
 
 class Driver(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='driver')
-    avatar = models.CharField(max_length=255)
     phone = models.CharField(max_length=255, blank=True)
     address = models.CharField(max_length=255, blank=True)
     location = models.CharField(max_length=255, blank=True)
 
-    def __str__(self):
-        return self.user.get_full_name()
+    # class Meta:
+    #     ordering = ['full_name']
+
+    def __str__(self) -> str:
+        return str(self.id)+' '+self.user.get_full_name()
+
+
+class Category(models.Model):
+    title = models.CharField(max_length=255)
+    featured_product = models.ForeignKey('Meal', on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+    
+    class Meta:
+        verbose_name = "Categorie"
+        ordering = ['title']
+
+    def __str__(self) -> str:
+        return self.title
+
 
 class Meal(models.Model):
     restaurant = models.ForeignKey(Restaurant, on_delete=models.PROTECT)
     name = models.CharField(max_length=255)
-    short_description = models.CharField(max_length=500)
+    short_description = models.TextField(null=True, blank=True)
     image = models.ImageField(upload_to='meal_images/',blank=False)
-    price = models.IntegerField(default=0)
+    price = models.DecimalField(max_digits=6, decimal_places=2)
 
-    def __str__(self):
-        return self.name
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self) -> str:
+        return str(self.id)+' '+self.name
+
 
 class Order(models.Model):
     COOKING = 1
@@ -55,7 +75,7 @@ class Order(models.Model):
         (DELIVERED,"Delivered"),
     )
 
-    customer = models.ForeignKey(Customer, models.PROTECT)
+    customer = models.ForeignKey(Customer, on_delete=models.PROTECT)
     restaurant = models.ForeignKey(Restaurant, models.PROTECT)
     driver = models.ForeignKey(Driver, models.PROTECT, blank=True, null=True)
     address = models.CharField(max_length=500)
@@ -67,11 +87,15 @@ class Order(models.Model):
     def __str__(self):
         return str(self.id)
 
+
 class OrderDetails(models.Model):
-    order = models.ForeignKey(Order, models.CASCADE, related_name='order_details')
-    meal = models.ForeignKey(Meal, models.PROTECT)
-    quantity = models.IntegerField()
-    sub_total = models.IntegerField()
+    order = models.ForeignKey(Order, on_delete=models.PROTECT, related_name='order_details')
+    meal = models.ForeignKey(Meal, on_delete=models.PROTECT)
+    quantity = models.PositiveSmallIntegerField()
+    sub_total = models.DecimalField(max_digits=6, decimal_places=2)
+
+    class Meta:
+        verbose_name = "Order Detail"
 
     def __str__(self):
         return str(self.id)

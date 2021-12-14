@@ -1,0 +1,434 @@
+{
+	"info": {
+		"_postman_id": "ae3455e1-26bd-4090-acf2-3d4d2f73bed8",
+		"name": "Yemeksepeti",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Create Order",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "restaurant_id",
+							"value": "2",
+							"type": "text"
+						},
+						{
+							"key": "address",
+							"value": "Ataşehir",
+							"type": "text"
+						},
+						{
+							"key": "order_details",
+							"value": "[{\"meal_id\":2, \"quantity\":2}, {\"meal_id\":3, \"quantity\":1}]",
+							"type": "text"
+						},
+						{
+							"key": "customer_id",
+							"value": "4",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/customer/order/create/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"customer",
+						"order",
+						"create",
+						""
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Create Order",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "restaurant_id",
+									"value": "2",
+									"type": "text"
+								},
+								{
+									"key": "address",
+									"value": "Ataşehir",
+									"type": "text"
+								},
+								{
+									"key": "order_details",
+									"value": "[{\"meal_id\":2, \"quantity\":2}, {\"meal_id\":3, \"quantity\":1}]",
+									"type": "text"
+								},
+								{
+									"key": "customer_id",
+									"value": "4",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/customer/order/create/",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"customer",
+								"order",
+								"create",
+								""
+							]
+						}
+					},
+					"_postman_previewlanguage": null,
+					"header": null,
+					"cookie": [],
+					"body": null
+				}
+			]
+		},
+		{
+			"name": "List Order",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8000/api/customer/order/list/",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"customer",
+						"order",
+						"list",
+						""
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "List Order",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/api/customer/order/list/",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"customer",
+								"order",
+								"list",
+								""
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Tue, 14 Dec 2021 00:22:43 GMT"
+						},
+						{
+							"key": "Server",
+							"value": "WSGIServer/0.2 CPython/3.9.7"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Vary",
+							"value": "Accept, Cookie"
+						},
+						{
+							"key": "Allow",
+							"value": "OPTIONS, GET, POST"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY"
+						},
+						{
+							"key": "Content-Length",
+							"value": "371"
+						},
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff"
+						},
+						{
+							"key": "Referrer-Policy",
+							"value": "same-origin"
+						},
+						{
+							"key": "Cross-Origin-Opener-Policy",
+							"value": "same-origin"
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"id\": 4,\n        \"customer\": {\n            \"id\": 4,\n            \"name\": \"Selin Simge\",\n            \"phone\": \"12345678910\",\n            \"address\": \"Sarıyer\"\n        },\n        \"restaurant\": {\n            \"id\": 2,\n            \"name\": \"Süper Dönerci\",\n            \"phone\": \"12345678910\",\n            \"address\": \"istanbul\"\n        },\n        \"driver\": null,\n        \"order_details\": [\n            {\n                \"id\": 4,\n                \"meal\": 2,\n                \"quantity\": 2,\n                \"sub_total\": \"80.00\"\n            },\n            {\n                \"id\": 5,\n                \"meal\": 3,\n                \"quantity\": 1,\n                \"sub_total\": \"65.00\"\n            }\n        ],\n        \"total\": 145,\n        \"status\": \"Cooking\",\n        \"address\": \"Ataşehir\"\n    }\n]"
+				}
+			]
+		},
+		{
+			"name": "List Order {id}",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "List Order {id}",
+					"host": [
+						"List Order {id}"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "List Order {id}",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "List Order {id}",
+							"host": [
+								"List Order {id}"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Tue, 14 Dec 2021 00:36:04 GMT"
+						},
+						{
+							"key": "Server",
+							"value": "WSGIServer/0.2 CPython/3.9.7"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Vary",
+							"value": "Accept, Cookie"
+						},
+						{
+							"key": "Allow",
+							"value": "OPTIONS, GET"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY"
+						},
+						{
+							"key": "Content-Length",
+							"value": "369"
+						},
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff"
+						},
+						{
+							"key": "Referrer-Policy",
+							"value": "same-origin"
+						},
+						{
+							"key": "Cross-Origin-Opener-Policy",
+							"value": "same-origin"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"id\": 4,\n    \"customer\": {\n        \"id\": 4,\n        \"name\": \"Selin Simge\",\n        \"phone\": \"12345678910\",\n        \"address\": \"Sarıyer\"\n    },\n    \"restaurant\": {\n        \"id\": 2,\n        \"name\": \"Süper Dönerci\",\n        \"phone\": \"12345678910\",\n        \"address\": \"istanbul\"\n    },\n    \"driver\": null,\n    \"order_details\": [\n        {\n            \"id\": 4,\n            \"meal\": 2,\n            \"quantity\": 2,\n            \"sub_total\": \"80.00\"\n        },\n        {\n            \"id\": 5,\n            \"meal\": 3,\n            \"quantity\": 1,\n            \"sub_total\": \"65.00\"\n        }\n    ],\n    \"total\": 145,\n    \"status\": \"Cooking\",\n    \"address\": \"Ataşehir\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Pick Order",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "order_id",
+							"value": "4",
+							"type": "text"
+						},
+						{
+							"key": "driver_id",
+							"value": "1",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8000/api/driver/order/pick/",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"driver",
+						"order",
+						"pick",
+						""
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Pick Order",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "order_id",
+									"value": "4",
+									"type": "text"
+								},
+								{
+									"key": "driver_id",
+									"value": "1",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "localhost:8000/api/driver/order/pick/",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"driver",
+								"order",
+								"pick",
+								""
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Tue, 14 Dec 2021 00:47:44 GMT"
+						},
+						{
+							"key": "Server",
+							"value": "WSGIServer/0.2 CPython/3.9.7"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Vary",
+							"value": "Accept, Cookie"
+						},
+						{
+							"key": "Allow",
+							"value": "GET, POST, OPTIONS"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY"
+						},
+						{
+							"key": "Content-Length",
+							"value": "20"
+						},
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff"
+						},
+						{
+							"key": "Referrer-Policy",
+							"value": "same-origin"
+						},
+						{
+							"key": "Cross-Origin-Opener-Policy",
+							"value": "same-origin"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"success\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Complete Order",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "order_id",
+							"value": "4",
+							"type": "text"
+						},
+						{
+							"key": "driver_id",
+							"value": "1",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": ""
+				}
+			},
+			"response": []
+		}
+	]
+}
