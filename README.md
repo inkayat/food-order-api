@@ -2,7 +2,7 @@
 # Yemeksepeti - Python
 
 Kulanıcının siparişlerini alıp pub/sub design-patternini kullanıp, daha sonra
-başka bir endpoint'den alıp siparişi işleyen bir REST-API
+başka bir endpointten alıp siparişi işleyen bir REST-API
 servisi.
 
 ## Yükleme 
