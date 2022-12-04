@@ -6,10 +6,11 @@ başka bir endpointten alıp siparişi işleyen bir REST-API
 servisi.
 
 ## Yükleme 
-
+Run Application
 ```bash 
   docker-compose build
   docker-compose up
+  task test
 ```
     
 ## API Kullanımı
